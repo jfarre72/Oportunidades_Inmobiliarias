@@ -1,10 +1,9 @@
-// Auto-load gallery images from images/1.jpg, 2.jpg ... up to 30.
-// Stops on first missing image. Supports .jpg, .jpeg, .png, .webp.
+// Auto-load gallery images. Tries images/foto<N>.jpg and images/<N>.jpg
+// for N from 1..60, in parallel, ignoring missing numbers.
 (async function () {
   const gallery = document.getElementById('gallery');
   const placeholder = document.getElementById('galleryPlaceholder');
-  const exts = ['jpg', 'jpeg', 'png', 'webp'];
-  const found = [];
+  const MAX = 60;
 
   const tryLoad = (src) => new Promise((resolve) => {
     const img = new Image();
@@ -13,20 +12,18 @@
     img.src = src;
   });
 
-  for (let i = 1; i <= 30; i++) {
-    let hit = null;
-    for (const ext of exts) {
-      const src = `images/${i}.${ext}`;
-      // eslint-disable-next-line no-await-in-loop
-      const ok = await tryLoad(src);
-      if (ok) { hit = ok; break; }
-    }
-    if (!hit) break;
-    found.push(hit);
+  const tasks = [];
+  for (let i = 1; i <= MAX; i++) {
+    tasks.push(
+      tryLoad(`images/foto${i}.jpg`).then(s => s || tryLoad(`images/${i}.jpg`))
+        .then(src => ({ i, src }))
+    );
   }
+  const results = await Promise.all(tasks);
+  const found = results.filter(r => r.src).sort((a, b) => a.i - b.i).map(r => r.src);
 
   if (found.length === 0) return;
-  placeholder.style.display = 'none';
+  if (placeholder) placeholder.style.display = 'none';
 
   found.forEach((src, idx) => {
     const img = document.createElement('img');
