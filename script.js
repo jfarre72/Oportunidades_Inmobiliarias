@@ -1,10 +1,8 @@
-// Auto-load gallery images. Tries images/foto<N>.<ext> and images/<N>.<ext>
-// for N from 1..60, ignoring gaps. Supports jpg, jpeg, png, webp.
+// Auto-load gallery images. Tries images/foto<N>.jpg and images/<N>.jpg
+// for N from 1..60, in parallel, ignoring missing numbers.
 (async function () {
   const gallery = document.getElementById('gallery');
   const placeholder = document.getElementById('galleryPlaceholder');
-  const exts = ['jpg', 'jpeg', 'png', 'webp'];
-  const prefixes = ['foto', ''];
   const MAX = 60;
 
   const tryLoad = (src) => new Promise((resolve) => {
@@ -14,27 +12,18 @@
     img.src = src;
   });
 
-  const candidates = [];
+  const tasks = [];
   for (let i = 1; i <= MAX; i++) {
-    for (const p of prefixes) {
-      for (const ext of exts) {
-        candidates.push({ i, src: `images/${p}${i}.${ext}` });
-      }
-    }
+    tasks.push(
+      tryLoad(`images/foto${i}.jpg`).then(s => s || tryLoad(`images/${i}.jpg`))
+        .then(src => ({ i, src }))
+    );
   }
-
-  const results = await Promise.all(candidates.map(c =>
-    tryLoad(c.src).then(ok => ok ? { i: c.i, src: ok } : null)
-  ));
-
-  const byIndex = new Map();
-  for (const r of results) {
-    if (r && !byIndex.has(r.i)) byIndex.set(r.i, r.src);
-  }
-  const found = [...byIndex.entries()].sort((a, b) => a[0] - b[0]).map(e => e[1]);
+  const results = await Promise.all(tasks);
+  const found = results.filter(r => r.src).sort((a, b) => a.i - b.i).map(r => r.src);
 
   if (found.length === 0) return;
-  placeholder.style.display = 'none';
+  if (placeholder) placeholder.style.display = 'none';
 
   found.forEach((src, idx) => {
     const img = document.createElement('img');
