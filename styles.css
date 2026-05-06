@@ -107,7 +107,7 @@ h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; line-height: 1.2; 
 }
 .price-card__meta span { color: var(--muted); }
 .price-card__meta strong { color: var(--accent); font-weight: 600; }
-.price-card__note { font-size: .82rem; color: var(--muted); margin: 12px 0 0; text-align: center; }
+.price-card__note { font-size: .8rem; color: var(--muted); margin: 0 0 14px; font-style: italic; line-height: 1.4; }
 .price-card__highlight {
   background: #fff8ec; border: 1px solid #f0d9a8; border-left: 3px solid var(--primary);
   padding: 10px 14px; border-radius: 8px; font-size: .85rem; color: #5a4416;
