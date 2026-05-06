@@ -253,6 +253,31 @@ h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; line-height: 1.2; 
   background: var(--surface-alt); padding: 2px 8px; border-radius: 6px; font-size: .85em;
 }
 
+/* Map */
+.map {
+  position: relative; display: block;
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow);
+  aspect-ratio: 16 / 9;
+  background: var(--surface);
+}
+@media (max-width: 600px) { .map { aspect-ratio: 4 / 3; } }
+.map iframe {
+  width: 100%; height: 100%; border: 0; display: block;
+  filter: saturate(1.05);
+}
+.map__overlay {
+  position: absolute; bottom: 16px; right: 16px;
+  background: #fff; color: var(--accent);
+  padding: 10px 16px; border-radius: 999px;
+  font-size: .9rem; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  transition: transform .2s, background .2s;
+  pointer-events: none;
+}
+.map:hover .map__overlay { transform: translateY(-2px); background: var(--primary); color: #fff; }
+
 /* Description */
 .description { max-width: 860px; }
 .description p { margin: 16px 0; color: #2a2f3c; }
