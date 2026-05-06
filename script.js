@@ -75,6 +75,7 @@
   });
 
   let current = 0;
+  let userInteracted = false;
 
   const update = (next) => {
     current = (next + photos.length) % photos.length;
@@ -85,19 +86,24 @@
       t.classList.toggle('is-active', i === current)
     );
     counter.textContent = `${current + 1} / ${photos.length}`;
-    const activeThumb = thumbs.children[current];
-    if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    if (userInteracted) {
+      const activeThumb = thumbs.children[current];
+      if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    }
     if (!lb.hidden) lbImg.src = photos[current];
   };
 
   update(0);
 
-  btnPrev.addEventListener('click', () => update(current - 1));
-  btnNext.addEventListener('click', () => update(current + 1));
+  const advance = (delta) => { userInteracted = true; update(current + delta); };
+  const goTo = (i) => { userInteracted = true; update(i); };
+
+  btnPrev.addEventListener('click', () => advance(-1));
+  btnNext.addEventListener('click', () => advance(1));
 
   thumbs.addEventListener('click', (e) => {
     const btn = e.target.closest('.carousel__thumb');
-    if (btn) update(parseInt(btn.dataset.index, 10));
+    if (btn) goTo(parseInt(btn.dataset.index, 10));
   });
 
   // Click main image -> lightbox
@@ -114,8 +120,8 @@
   btnExpand.addEventListener('click', openLightbox);
 
   lbClose.addEventListener('click', closeLightbox);
-  lbPrev.addEventListener('click', () => update(current - 1));
-  lbNext.addEventListener('click', () => update(current + 1));
+  lbPrev.addEventListener('click', () => advance(-1));
+  lbNext.addEventListener('click', () => advance(1));
   lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
 
   // Keyboard
@@ -126,8 +132,8 @@
       document.activeElement === btnNext;
     if (e.key === 'Escape' && !lb.hidden) closeLightbox();
     if (!inCarousel) return;
-    if (e.key === 'ArrowLeft') update(current - 1);
-    if (e.key === 'ArrowRight') update(current + 1);
+    if (e.key === 'ArrowLeft') advance(-1);
+    if (e.key === 'ArrowRight') advance(1);
   });
 
   // Touch swipe on stage
@@ -137,7 +143,7 @@
   stage.addEventListener('touchend', (e) => {
     if (touchX === null) return;
     const dx = e.changedTouches[0].clientX - touchX;
-    if (Math.abs(dx) > 40) update(current + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 40) advance(dx < 0 ? 1 : -1);
     touchX = null;
   });
 
